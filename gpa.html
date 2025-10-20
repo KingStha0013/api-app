@@ -16,10 +16,10 @@
             --background-color: #f4f7f9;
             --card-background: #ffffff;
             --text-color: #333;
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --danger-color: #dc3545;
-            --success-color: #28a745;
+            --primary-color: #007bff; /* Blue */
+            --secondary-color: #6c757d; /* Gray */
+            --danger-color: #dc3545; /* Red */
+            --success-color: #28a745; /* Green */
             --border-color: #e0e0e0;
             --grade-A: #28a745; 
             --grade-B: #007bff; 
@@ -31,7 +31,7 @@
             --background-color: #1a1a2e;
             --card-background: #2c2c43;
             --text-color: #e6e6e6;
-            --primary-color: #8c9eff;
+            --primary-color: #8c9eff; /* Lighter Blue */
             --secondary-color: #a0a0a0;
             --danger-color: #ff6b6b;
             --success-color: #4cd964;
@@ -55,7 +55,15 @@
         .header-actions { display: flex; gap: 10px; }
         .card { background-color: var(--card-background); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
 
-        button, select, input { padding: 10px 15px; border-radius: 5px; font-size: 1rem; border: 1px solid var(--border-color); color: var(--text-color); background-color: var(--card-background); }
+        button, select, input { 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            font-size: 1rem; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-color); 
+            background-color: var(--card-background); 
+            transition: border-color 0.3s, background-color 0.3s;
+        }
         button { cursor: pointer; font-weight: 600; border: none; }
         .primary-btn { background-color: var(--primary-color); color: white; }
         .secondary-btn { background-color: var(--secondary-color); color: white; }
@@ -82,12 +90,15 @@
             gap: 10px;
             flex-grow: 2;
         }
+        
+        .marks-input-group input { flex: 1; min-width: 70px; } 
 
         .subject-row input[type="text"] { flex: 2; min-width: 150px; }
-        .subject-row input[type="number"], .subject-row select { flex: 1; min-width: 80px; }
+        .subject-row select { min-width: 70px; }
         .fail-info { font-size: 0.8rem; color: var(--secondary-color); min-width: 50px; text-align: center; white-space: nowrap; }
+        .remove-btn { background: none; color: var(--danger-color); padding: 5px; border: 1px solid var(--danger-color); }
 
-        /* --- Results Panel Hiding Logic --- */
+        /* --- Results Panel Hiding Logic (IMPORTANT FOR MOBILE) --- */
         #resultsPanel { 
             transition: opacity 0.3s, max-height 0.5s ease-out;
             overflow: hidden;
@@ -102,15 +113,29 @@
             margin-bottom: 0;
         }
 
-        /* --- Mobile View Toggling (IMPORTANT) --- */
+        /* --- Mobile View Toggling (Crucial for the app-like feel) --- */
         @media (max-width: 767px) {
             .container { display: block; }
+
+            /* Only show Input elements in input-view */
             .input-view #resultsPanel { display: none !important; }
-            .results-view #subjectsPanel,
-            .results-view #configPanel { display: none !important; }
             
+            /* Only show Results elements in results-view */
+            .results-view #subjectsPanel,
+            .results-view #configPanel,
+            .results-view #inputBox .action-group { display: none !important; }
+            .results-view #resultsPanel { display: block !important; }
+            
+            /* Show toggle buttons on mobile only */
             #backToInputBtn { display: inline-block !important; }
-            #viewResultsBtn { display: inline-block !important; }
+            .input-view #viewResultsBtn { display: inline-block !important; }
+            .results-view #viewResultsBtn { display: none !important; } 
+            
+            /* Subject row adjustments for very small screens */
+            .subject-row { 
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
         }
 
         /* --- Desktop View (Two Columns) --- */
@@ -125,28 +150,45 @@
             #subjectsPanel { grid-area: subjects; }
             #resultsPanel { grid-area: results; }
             
+            /* Hide mobile-only buttons on desktop */
             #backToInputBtn { display: none !important; }
             #viewResultsBtn { display: none !important; }
-            .subject-row { flex-wrap: nowrap; }
-            .marks-input-group { flex-grow: 1; max-width: 250px; }
+            
+            /* Refined row layout for desktop */
+            .subject-row { 
+                flex-wrap: nowrap;
+                justify-content: space-between;
+            }
+            .marks-input-group { flex-grow: 0; max-width: 250px; }
             .marks-input-group input { min-width: 0; }
         }
 
-        /* --- Results Details (Retained) --- */
-        .overall-results { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-        .overall-gpa-meter { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--border-color); display: flex; justify-content: center; align-items: center; }
-        .gpa-display span { font-size: 2.5rem; font-weight: 700; display: block; line-height: 1; }
+        /* --- Results Details --- */
+        .overall-results { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 20px; text-align: center; }
+        .overall-gpa-meter { 
+            width: 120px; height: 120px; border-radius: 50%; 
+            border: 5px solid var(--border-color); 
+            display: flex; justify-content: center; align-items: center; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .gpa-display span { font-size: 2.5rem; font-weight: 700; display: block; line-height: 1; transition: color 0.3s; }
         #resultsTable { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         #resultsTable th, #resultsTable td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border-color); }
         .progress-bar-container { background-color: var(--border-color); border-radius: 5px; overflow: hidden; height: 20px; position: relative; width: 100%; }
         .progress-bar { height: 100%; width: 0; transition: width 1s ease-out, background-color 0.3s; display: flex; align-items: center; padding-left: 5px; color: white; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
         .grade-A-color { background-color: var(--grade-A); }
+        .grade-B-color { background-color: var(--grade-B); }
+        .grade-C-color { background-color: var(--grade-C); }
+        .grade-D-color { background-color: var(--grade-D); }
         .grade-text-A { color: var(--grade-A); font-weight: 700; }
+        .grade-text-B { color: var(--grade-B); font-weight: 700; }
+        .grade-text-C { color: var(--grade-C); font-weight: 700; }
+        .grade-text-D { color: var(--grade-D); font-weight: 700; }
         .export-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
         .export-actions button { flex-grow: 1; min-width: 120px; }
         footer { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid var(--border-color); color: var(--secondary-color); }
 
-        /* New CSS for Modal */
+        /* --- About Modal Styles --- */
         .modal {
             display: none; 
             position: fixed; 
@@ -158,91 +200,61 @@
             overflow: auto; 
             background-color: rgba(0,0,0,0.4); 
             backdrop-filter: blur(2px);
+            transition: opacity 0.3s;
         }
 
         .modal-content {
             background-color: var(--card-background);
-            margin: 10% auto; /* Centering block element vertically and horizontally */
+            margin: 10% auto; 
             padding: 25px;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 85%; 
             max-width: 450px;
             position: relative;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
             animation: slideUp 0.3s ease-out;
+        }
+        
+        /* --- CUSTOM DIALOG STYLES (New "Good Vibe Box") --- */
+        #customDialogModal {
+            z-index: 1001; /* Higher than 'About' modal */
+        }
+        
+        #customDialogContent {
+            margin: 25% auto; /* Move higher for better visibility */
+        }
+
+        #dialogMessage {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        #dialogActions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        #dialogActions button {
+            flex-grow: 1;
+            min-width: 100px;
+            padding: 10px 15px;
         }
 
         @keyframes slideUp {
             from { transform: translateY(50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        /* (Rest of Modal Styles remain the same) */
 
-        .close-btn {
-            color: var(--text-color);
-            float: right;
-            font-size: 30px;
-            font-weight: bold;
-            line-height: 1;
-            cursor: pointer;
-            margin: -5px -5px 0 0;
-        }
-
-        .close-btn:hover,
-        .close-btn:focus {
-            color: var(--danger-color);
-            text-decoration: none;
-        }
-        
-        .modal-content h2 { 
-            font-size: 1.5rem;
-            margin-bottom: 15px; 
-            border-bottom: 2px solid var(--primary-color); 
-            padding-bottom: 5px; 
-        }
-        
-        /* Styles for Centered Creator Info */
-        .creator-info {
-            text-align: center; /* Centers inline content (icon/name/description) */
-            margin: 20px 0 30px; 
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .creator-photo-container {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 10px auto; /* CENTERS THIS BLOCK ELEMENT */
-            border-radius: 50%;
-            background-color: var(--primary-color); 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .creator-icon {
-            font-size: 60px;
-            color: white; 
-        }
-
-        .creator-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 15px; 
-            color: var(--primary-color);
-        }
-
-        .app-description {
-            font-style: italic;
-            color: var(--secondary-color);
-            margin-bottom: 0;
-        }
-
-        .other-details {
-            margin-top: 20px;
-            padding-top: 10px;
-            font-size: 0.9rem;
-        }
+        .creator-info { text-align: center; margin: 20px 0 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .creator-photo-container { width: 80px; height: 80px; margin: 0 auto 10px auto; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        .creator-icon { font-size: 40px; color: white; }
+        .creator-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; color: var(--primary-color); }
+        .app-description { font-style: italic; color: var(--secondary-color); margin-bottom: 0; font-size: 0.9rem; }
+        .other-details { margin-top: 20px; padding-top: 10px; font-size: 0.9rem; }
     </style>
 </head>
 <body class="input-view"> 
@@ -250,7 +262,7 @@
         <h1>🇳🇵 NEB GPA Calculator</h1>
         <div class="header-actions">
             <button id="aboutAppBtn" aria-label="About the App" class="secondary-btn"><i class="fas fa-info-circle"></i> About</button>
-            <button id="darkModeToggle" aria-label="Toggle dark/light mode">
+            <button id="darkModeToggle" aria-label="Toggle dark/light mode" class="secondary-btn">
                 <i class="fas fa-moon"></i>
             </button>
         </div>
@@ -282,11 +294,10 @@
                     </select>
                 </div>
 
-                <button id="addSubjectBtn" class="primary-btn"><i class="fas fa-plus-circle"></i> Add Subject</button>
-                
                 <div class="action-group">
-                    <button id="calculateBtn" class="primary-btn"><i class="fas fa-calculator"></i> Calculate GPA</button>
-                    <button id="viewResultsBtn" class="secondary-btn" style="display:none;"><i class="fas fa-chart-bar"></i> View Results</button>
+                    <button id="addSubjectBtn" class="primary-btn" style="flex-grow: 1;"><i class="fas fa-plus-circle"></i> Add Subject</button>
+                    <button id="calculateBtn" class="primary-btn" style="flex-grow: 1;"><i class="fas fa-calculator"></i> Calculate GPA</button>
+                    <button id="viewResultsBtn" class="secondary-btn" style="display:none; flex-grow: 1;"><i class="fas fa-chart-bar"></i> View Results</button>
                 </div>
             </section>
 
@@ -315,7 +326,7 @@
                         <small>Overall GPA</small>
                     </div>
                 </div>
-                <div class="overall-percentage">
+                <div class="overall-percentage" style="text-align: left;">
                     <p>Overall Percentage: <strong id="overallPercentage">--</strong></p>
                     <p>Total Marks: <strong id="totalMarks">0 / 0</strong></p>
                 </div>
@@ -325,7 +336,7 @@
                 <thead>
                     <tr>
                         <th>Subject</th>
-                        <th>%</th>
+                        <th style="min-width: 100px;">%</th>
                         <th>Grade</th>
                         <th>GPA</th>
                     </tr>
@@ -338,7 +349,7 @@
                 <button id="shareBtn" class="share-btn"><i class="fas fa-share-alt"></i> Share Results</button>
                 <button id="exportPdfBtn" class="secondary-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
                 <button id="exportCsvBtn" class="secondary-btn"><i class="fas fa-file-csv"></i> Export CSV</button>
-                <button id="resetBtn" class="secondary-btn danger-btn"><i class="fas fa-undo"></i> Reset All</button>
+                <button id="resetBtn" class="danger-btn"><i class="fas fa-undo"></i> Reset All</button>
             </div>
         </section>
     </main>
@@ -350,26 +361,36 @@
             
             <div class="creator-info">
                 <div class="creator-photo-container">
-                    <i class="fas fa-user-circle creator-icon"></i>
+                    <i class="fas fa-crown creator-icon"></i> 
                 </div>
-                <h3 class="creator-name">David Shrestha</h3>
-                <p class="app-description">This application is a GPA calculator designed for students under the Nepali National Examinations Board (NEB) system.</p>
+                <h3 class="creator-name">KingamerNep (David Shrestha)</h3>
+                <p class="app-description">A fast, mobile-friendly GPA calculator for students under the Nepali National Examinations Board (NEB) system.</p>
             </div>
             
             <div class="other-details">
-                <p><strong>App Details:</strong> This is an open-source tool that uses **Local Storage** to save your subject inputs and last calculated results directly in your browser.</p>
-                <p><strong>Creator's Link:</strong> <a href="https://example.com" target="_blank">View Creator's Photo/Details</a></p>
+                <p><strong>Version:</strong> 1.0.3</p>
+                <p><strong>Features:</strong> **Local Storage** (saves inputs & results), **Dark Mode**, **PDF/CSV Export**, and **Mobile App** compatibility via Webintoapp.</p>
+                <p><strong>Source:</strong> Made with ❤️ by KingamerNep</p>
             </div>
         </div>
     </div>
+    
+    <div id="customDialogModal" class="modal">
+        <div class="modal-content" id="customDialogContent">
+            <div id="dialogMessage"></div>
+            <div id="dialogActions">
+                </div>
+        </div>
+    </div>
+    
     <footer>
         <p>&copy; 2025 KingamerNep David | Made with ❤️ by KingamerNep</p>
     </footer>
 
     <script>
-        // --- JavaScript Logic (Final Feature Set) ---
+        // --- JavaScript Logic ---
         
-        // --- CONSTANTS ---
+        // --- CONSTANTS & DOM Elements (Same as before) ---
         const GRADING_SCALE = [
             { min: 90, max: 100, grade: 'A+', gpa: 4.0, colorClass: 'grade-A' },
             { min: 80, max: 89, grade: 'A', gpa: 3.6, colorClass: 'grade-A' },
@@ -380,43 +401,28 @@
             { min: 0, max: 39, grade: 'D/F', gpa: 0.0, colorClass: 'grade-D' }
         ];
 
-        // NEB Passing Marks
         const PASS_MARKS = {
             100: 35, 75: 26, 50: 17,
             theory_75: 26, 
             practical_25: 9  
         };
         
-        // Science preset is 6 core subjects
         const SUBJECT_PRESETS = {
             science: [
-                { name: 'Nepali', full: 100 },
-                { name: 'English', full: 100 },
-                { name: 'Physics', full: 100 },
-                { name: 'Chemistry', full: 100 },
-                { name: 'Mathematics', full: 100 },
-                { name: 'Biology / Comp Science', full: 100 },
+                { name: 'Nepali', full: 100 }, { name: 'English', full: 100 }, { name: 'Physics', full: 100 },
+                { name: 'Chemistry', full: 100 }, { name: 'Mathematics', full: 100 }, { name: 'Biology / Comp Science', full: 100 },
             ],
             management: [
-                { name: 'Nepali', full: 100 },
-                { name: 'English', full: 100 },
-                { name: 'Basic Math/Economics', full: 100 },
-                { name: 'Accountancy', full: 100 },
-                { name: 'Business Studies', full: 100 },
-                { name: 'Marketing / Finance', full: 100 }
+                { name: 'Nepali', full: 100 }, { name: 'English', full: 100 }, { name: 'Basic Math/Economics', full: 100 },
+                { name: 'Accountancy', full: 100 }, { name: 'Business Studies', full: 100 }, { name: 'Marketing / Finance', full: 100 }
             ],
             humanities: [
-                { name: 'Nepali', full: 100 },
-                { name: 'English', full: 100 },
-                { name: 'Social Studies', full: 100 },
-                { name: 'Major I (e.g. History)', full: 100 },
-                { name: 'Major II (e.g. Sociology)', full: 100 },
-                { name: 'Minor (e.g. Psychology)', full: 100 }
+                { name: 'Nepali', full: 100 }, { name: 'English', full: 100 }, { name: 'Social Studies', full: 100 },
+                { name: 'Major I (e.g. History)', full: 100 }, { name: 'Major II (e.g. Sociology)', full: 100 }, { name: 'Minor (e.g. Psychology)', full: 100 }
             ],
             custom: [] 
         };
 
-        // --- DOM Elements & State ---
         let subjectCounter = 0; 
         const subjectsContainer = document.getElementById('subjectsContainer');
         const subjectCountDropdown = document.getElementById('subjectCount');
@@ -432,12 +438,74 @@
         const lastCalcDateDisplay = document.getElementById('lastCalcDate');
         const body = document.body;
         
-        // Modal elements
         const aboutModal = document.getElementById('aboutModal');
         const aboutAppBtn = document.getElementById('aboutAppBtn');
         const closeBtn = document.querySelector('.close-btn');
+        
+        // Custom Dialog Elements
+        const customDialogModal = document.getElementById('customDialogModal');
+        const dialogMessage = document.getElementById('dialogMessage');
+        const dialogActions = document.getElementById('dialogActions');
+        
 
-        // --- CORE FUNCTION: View Management ---
+        // --- NEW DIALOG FUNCTIONS ---
+        
+        /**
+         * Shows a custom alert box, replacing the native alert().
+         * @param {string} message The message to display.
+         */
+        function showCustomAlert(message) {
+            return new Promise(resolve => {
+                dialogMessage.innerHTML = message;
+                dialogActions.innerHTML = ''; 
+                
+                const okButton = document.createElement('button');
+                okButton.textContent = 'OK';
+                okButton.classList.add('primary-btn');
+                okButton.addEventListener('click', () => {
+                    customDialogModal.style.display = 'none';
+                    resolve(true); 
+                });
+                
+                dialogActions.appendChild(okButton);
+                customDialogModal.style.display = 'block';
+            });
+        }
+
+        /**
+         * Shows a custom confirm box, replacing the native confirm().
+         * @param {string} message The confirmation message.
+         * @returns {Promise<boolean>} Resolves with true for OK, false for Cancel.
+         */
+        function showCustomConfirm(message) {
+            return new Promise(resolve => {
+                dialogMessage.innerHTML = message;
+                dialogActions.innerHTML = ''; 
+
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = 'CANCEL';
+                cancelButton.classList.add('secondary-btn');
+                cancelButton.addEventListener('click', () => {
+                    customDialogModal.style.display = 'none';
+                    resolve(false); 
+                });
+                
+                const okButton = document.createElement('button');
+                okButton.textContent = 'OK';
+                okButton.classList.add('primary-btn');
+                okButton.addEventListener('click', () => {
+                    customDialogModal.style.display = 'none';
+                    resolve(true); 
+                });
+                
+                dialogActions.appendChild(cancelButton);
+                dialogActions.appendChild(okButton);
+                customDialogModal.style.display = 'block';
+            });
+        }
+
+
+        // --- CORE FUNCTION: View Management (Same as before) ---
         function toggleView(view) {
             if (window.innerWidth < 768) {
                 if (view === 'results') {
@@ -452,7 +520,7 @@
             }
         }
 
-        // --- 1. Subject Management Functions (Includes FIX for Delete Button) ---
+        // --- 1. Subject Management Functions (Modified to use custom dialogs) ---
 
         function getFullMarksDropdown(selected = 100) {
             return `
@@ -468,8 +536,8 @@
             if (fullMarks === 100) {
                 return `
                     <div class="marks-input-group" data-split="true">
-                        <input type="number" class="marks-theory" placeholder="Theory (Max 75)" min="0" max="75" value="${theory}">
-                        <input type="number" class="marks-practical" placeholder="Practical (Max 25)" min="0" max="25" value="${practical}">
+                        <input type="number" class="marks-theory" placeholder="Theory (75)" min="0" max="75" value="${theory}">
+                        <input type="number" class="marks-practical" placeholder="Practical (25)" min="0" max="25" value="${practical}">
                     </div>
                 `;
             } else {
@@ -502,7 +570,12 @@
                     currentObtained = row.querySelector('.marks-obtained').value;
                 }
                 
-                inputGroup.outerHTML = getMarksInputFields(fullMarks, currentObtained, currentTheory, currentPractical);
+                const parent = inputGroup.parentElement;
+                
+                const newHtml = getMarksInputFields(fullMarks, currentObtained, currentTheory, currentPractical);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newHtml;
+                parent.replaceChild(tempDiv.firstChild, inputGroup);
                 
                 const newRow = document.querySelector(`.subject-row[data-id="${row.dataset.id}"]`);
                 setupMarkInputListeners(newRow);
@@ -594,8 +667,8 @@
             }
         }
         
-        // Handles Preset Loading
-        function handleStreamChange() {
+        // Handles Preset Loading (Uses custom confirm)
+        async function handleStreamChange() {
             const selectedStream = subjectStreamDropdown.value;
             const preset = SUBJECT_PRESETS[selectedStream];
 
@@ -603,14 +676,15 @@
                 subjectCountDropdown.value = subjectsContainer.children.length; 
                 generateInitialSubjects(false, false); 
             } else {
-                subjectCountDropdown.value = preset.length;
-                
-                if (!confirm(`Switching to the '${selectedStream}' preset will clear all current inputs and set the count to ${preset.length}. Continue?`)) {
+                const continueSwitch = await showCustomConfirm(`Switching to the '${selectedStream}' preset will clear all current inputs and set the count to ${preset.length}. Continue?`);
+
+                if (!continueSwitch) {
                     const savedStream = localStorage.getItem('nebGpaStream') || 'custom';
                     subjectStreamDropdown.value = savedStream; 
                     return;
                 }
                 
+                subjectCountDropdown.value = preset.length;
                 subjectsContainer.innerHTML = '';
                 subjectCounter = 0; 
 
@@ -622,13 +696,15 @@
             }
         }
 
-        function generateInitialSubjects(loadDataFromStorage = false, checkSubjectCountChange = true) {
+        async function generateInitialSubjects(loadDataFromStorage = false, checkSubjectCountChange = true) {
              const currentChildrenCount = subjectsContainer.children.length;
              const targetCount = parseInt(subjectCountDropdown.value);
              const savedSubjects = loadDataFromStorage ? JSON.parse(localStorage.getItem('nebGpaSubjects') || '[]') : [];
 
              if (checkSubjectCountChange && currentChildrenCount > 0 && targetCount !== currentChildrenCount) {
-                if (!confirm(`Changing the subject count to ${targetCount} will clear all current inputs. Continue?`)) {
+                 const continueChange = await showCustomConfirm(`Changing the subject count to ${targetCount} will clear all current inputs. Continue?`);
+                 
+                 if (!continueChange) {
                     subjectCountDropdown.value = currentChildrenCount; 
                     return;
                 }
@@ -661,7 +737,7 @@
             updateCircularMeter(0);
         }
 
-        // --- 2. GPA Calculation Logic ---
+        // --- 2. GPA Calculation Logic (Modified to use custom alert) ---
 
         function getGradeDetails(percentage, fullMarks, obtainedTheory, obtainedPractical) {
             let isFailed = false;
@@ -684,7 +760,7 @@
             return GRADING_SCALE.find(rule => normalizedPercentage >= rule.min && normalizedPercentage <= rule.max) || GRADING_SCALE[GRADING_SCALE.length - 1];
         }
 
-        function calculateGPA() {
+        async function calculateGPA() {
             const subjectRows = document.querySelectorAll('.subject-row');
             
             let totalWeightedGPA = 0; 
@@ -695,7 +771,7 @@
             resultsTableBody.innerHTML = ''; 
 
             if (subjectRows.length === 0) {
-                alert("Please add subjects before calculating.");
+                await showCustomAlert("Please add subjects before calculating.");
                 return;
             }
 
@@ -718,7 +794,7 @@
                 }
 
                 if (isNaN(obtained) || isNaN(full) || full <= 0 || obtained > full) {
-                    alert(`Invalid input for ${name}. Please check the marks.`);
+                    await showCustomAlert(`Invalid input for ${name}. Please check the marks.`);
                     resultsPanel.classList.add('hidden');
                     return; 
                 }
@@ -785,7 +861,7 @@
             previousResultBanner.style.display = 'none'; 
         }
 
-        // --- 3. UI/UX & Utility Functions ---
+        // --- 3. UI/UX & Utility Functions (Modified to use custom alert/confirm) ---
 
         function animateProgressBars() {
             setTimeout(() => {
@@ -881,7 +957,7 @@
             }
         }
         
-        function showLastResultHandler() {
+        async function showLastResultHandler() {
             const lastResultString = localStorage.getItem('nebGpaLastResult');
             if (lastResultString) {
                 const lastResult = JSON.parse(lastResultString);
@@ -889,7 +965,7 @@
                 toggleView('results'); 
                 resultsPanel.classList.remove('hidden'); 
             } else {
-                alert("No previous results saved.");
+                await showCustomAlert("No previous results saved.");
             }
         }
 
@@ -903,8 +979,10 @@
             icon.classList.toggle('fa-sun', isDarkMode);
         }
 
-        function resetAll() {
-            if (!confirm("Are you sure you want to reset all data and inputs? This will clear local storage.")) {
+        async function resetAll() {
+            const shouldReset = await showCustomConfirm("Are you sure you want to reset all data and inputs? This will clear local storage.");
+
+            if (!shouldReset) {
                 return;
             }
             localStorage.clear(); 
@@ -931,10 +1009,10 @@
             aboutModal.style.display = "none";
         }
         
-        // --- 4. Export & Share Functions ---
+        // --- 4. Export & Share Functions (Modified to use custom alert) ---
         async function shareResults() {
             if (resultsPanel.classList.contains('hidden')) {
-                alert("Please calculate the GPA before sharing results.");
+                await showCustomAlert("Please calculate the GPA before sharing results.");
                 return;
             }
 
@@ -957,24 +1035,27 @@
             }
         }
 
-        function fallbackCopyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Results copied to clipboard! Paste it wherever you like.");
-            }).catch(err => {
-                alert("Failed to copy results. Please manually copy the results from the screen.");
+        async function fallbackCopyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(async () => {
+                await showCustomAlert("Results copied to clipboard! Paste it wherever you like.");
+            }).catch(async err => {
+                await showCustomAlert("Failed to copy results. Please manually copy the results from the screen.");
             });
         }
 
-        function exportCsv() {
+        async function exportCsv() {
             if (resultsPanel.classList.contains('hidden')) {
-                 alert("Please calculate the GPA before exporting results.");
+                 await showCustomAlert("Please calculate the GPA before exporting results.");
                  return;
             }
+            // ... (rest of exportCsv logic remains the same) ...
             const data = [["Subject", "Percentage", "Grade", "GPA"]];
             
             document.getElementById('perSubjectResults').querySelectorAll('tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
-                const percentage = cells[1].querySelector('.progress-bar').textContent.trim(); 
+                const progressBar = cells[1].querySelector('.progress-bar');
+                const percentage = progressBar ? progressBar.textContent.trim() : 'N/A'; 
+
                 data.push([
                     cells[0].textContent.trim(), 
                     percentage,
@@ -1001,16 +1082,17 @@
             URL.revokeObjectURL(url);
         }
 
-        function exportPdf() {
+        async function exportPdf() {
             if (resultsPanel.classList.contains('hidden')) {
-                 alert("Please calculate the GPA before exporting results.");
+                 await showCustomAlert("Please calculate the GPA before exporting results.");
                  return;
             }
             if (!window.jspdf || !window.jspdf.jsPDF.prototype.autoTable) {
-                 alert("PDF export libraries are missing. Cannot export.");
+                 await showCustomAlert("PDF export libraries are missing. Cannot export.");
                  return;
             }
             
+            // ... (rest of exportPdf logic remains the same) ...
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
@@ -1028,7 +1110,9 @@
 
             document.getElementById('perSubjectResults').querySelectorAll('tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
-                const percentage = cells[1].querySelector('.progress-bar').textContent.trim(); 
+                const progressBar = cells[1].querySelector('.progress-bar');
+                const percentage = progressBar ? progressBar.textContent.trim() : 'N/A'; 
+                
                 tableData.push([
                     cells[0].textContent.trim(),
                     percentage,
@@ -1082,18 +1166,25 @@
             document.getElementById('exportPdfBtn').addEventListener('click', exportPdf);
             document.getElementById('shareBtn').addEventListener('click', shareResults); 
 
-            // Modal Bindings (New)
+            // Modal Bindings
             aboutAppBtn.addEventListener('click', openAboutModal);
             closeBtn.addEventListener('click', closeAboutModal);
             window.addEventListener('click', (event) => {
                 if (event.target == aboutModal) {
                     closeAboutModal();
                 }
+                if (event.target == customDialogModal) {
+                    // Prevent closing dialog by clicking outside if it's an alert
+                    // (It should only close via button for confirmation)
+                    if (dialogActions.children.length === 1) { 
+                        customDialogModal.style.display = 'none';
+                    }
+                }
             });
 
-            subjectCountDropdown.addEventListener('change', () => {
+            subjectCountDropdown.addEventListener('change', async () => {
                 subjectStreamDropdown.value = 'custom'; 
-                generateInitialSubjects(false);
+                await generateInitialSubjects(false);
             });
             
             subjectStreamDropdown.addEventListener('change', handleStreamChange); 
