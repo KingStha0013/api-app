@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APK STORE - Modern App Repository</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========================================================= */
+        /* BASE STYLES & LAYOUT */
+        /* ========================================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #202124;
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #0f9d58; /* Primary Green */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            background-color: #0f9d58; /* Primary Green */
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .logo i {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 500;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            padding-left: 45px;
+            border-radius: 24px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-box:focus {
+            background-color: white;
+            color: #202124;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+        }
+
+        .search-box:focus + .search-icon {
+            color: #202124;
+        }
+
+        .user-actions button {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .user-actions button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* CONTAINER, TABS, FILTERS */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .category-tabs {
+            display: flex;
+            overflow-x: auto;
+            padding: 15px 0 20px;
+            margin-bottom: 20px;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .category-tabs button {
+            background: none;
+            border: 1px solid #dadce0;
+            padding: 10px 20px;
+            margin-right: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 15px;
+            white-space: nowrap;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-weight: 500;
+            color: #5f6368;
+        }
+
+        .category-tabs button.active {
+            background-color: #0f9d58;
+            color: white;
+            border-color: #0f9d58;
+            font-weight: 600;
+        }
+
+        .filter-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .section-title {
+            margin: 0; 
+            font-size: 24px;
+            font-weight: 600;
+            color: #202124;
+            border-left: 4px solid #1a73e8; /* Accent Color */
+            padding-left: 10px;
+        }
+        
+        /* APP GRID & CARD */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 30px 20px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+        }
+
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            border-color: #0f9d58;
+        }
+
+        .app-icon {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background-color: #f1f8e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #0f9d58;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 15px;
+        }
+        
+        .app-info {
+            padding: 12px;
+        }
+
+        .app-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 16px;
+        }
+        
+        .app-developer {
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .app-rating {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .app-rating .stars i {
+            color: gold;
+            margin-right: 2px;
+            font-size: 12px;
+        }
+        
+        .app-detail-tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #0f9d58;
+            background-color: #e6f4ea;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+        
+        /* APP DETAIL MODAL SPECIFIC */
+        .app-detail-header {
+            display: flex;
+            padding: 20px;
+            align-items: flex-start;
+        }
+
+        .detail-app-info {
+            flex-grow: 1;
+        }
+
+        .detail-app-name {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .detail-app-developer {
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 15px;
+        }
+
+        .detail-app-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            background-color: #e8f5e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-right: 20px;
+        }
+        
+        .detail-app-icon img {
+            padding: 10px;
+        }
+        
+        .install-btn {
+            background-color: #1a73e8; /* Accent Color */
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            margin-top: 10px;
+        }
+
+        .install-btn:hover {
+            background-color: #0f58b0;
+        }
+
+        .app-description {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .description-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #202124;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 0;
+            font-size: 18px;
+            color: #5f6368;
+        }
+
+        /* ========================================================= */
+        /* MODAL COMMON STYLES */
+        /* ========================================================= */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+            justify-content: center; 
+            align-items: flex-start; 
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 40px auto;
+            border-radius: 16px;
+            max-width: 800px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        .modal-content.small {
+            max-width: 450px;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            position: relative;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #5f6368;
+            transition: color 0.2s;
+        }
+        
+        /* PROFILE MODAL SPECIFICS */
+        .profile-body {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .profile-icon-large {
+            font-size: 60px;
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+        
+        .profile-divider {
+            border: 0;
+            height: 1px;
+            background: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .profile-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            background-color: #f1f3f4;
+            color: #202124;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .action-btn i {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #0f9d58;
+        }
+        
+        .action-btn:hover {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        
+        /* SETTINGS MODAL SPECIFICS */
+        .settings-list {
+            padding: 10px 0;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .setting-info {
+            flex-grow: 1;
+            margin-right: 15px;
+        }
+        
+        .setting-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .setting-icon {
+            color: #5f6368;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background-color: transparent;
+            border: 1px solid #dadce0;
+            color: #202124;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .log-out {
+            color: #ea4335;
+            border-color: #ea4335;
+        }
+        
+        .log-out:hover {
+            background-color: #fce8e6;
+        }
+
+        .version-text {
+            font-size: 12px;
+            color: #9aa0a6;
+            margin-top: 15px;
+        }
+        
+        /* Simplified Switch Styles */
+        .setting-toggle input:checked + .slider {
+            background-color: #0f9d58;
+        }
+        .setting-toggle {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .setting-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* RESPONSIVENESS */
+        @media (max-width: 600px) {
+            .header-container {
+                padding: 0 10px;
+            }
+            .logo h1 {
+                display: none;
+            }
+            .filter-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filter-controls > div {
+                margin-top: 10px;
+            }
+            .modal-content {
+                margin: 20px 10px;
+                width: calc(100% - 20px);
+            }
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 20px 15px;
+            }
+            .app-detail-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .detail-app-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fab fa-google-play"></i>
+                <h1>APK STORE</h1>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search for apps..." id="searchInput">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <div class="user-actions">
+                <button title="User Profile" id="openProfileBtn"><i class="fas fa-user"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="category-tabs" id="categoryTabs">
+            <button class="active" data-category="All">For You</button>
+            <button data-category="Games">Games</button>
+            <button data-category="Tools">Tools</button>
+            <button data-category="Productivity">Productivity</button>
+            <button data-category="Social">Social</button>
+            <button data-category="Utility">Utility</button>
+        </div>
+        
+        <div class="filter-controls">
+            <h2 id="currentCategoryTitle" class="section-title">Featured Apps</h2>
+            <div>
+                <label for="sortSelector">Sort by:</label>
+                <select id="sortSelector">
+                    <option value="rating">Highest Rating</option>
+                    <option value="name">App Name (A-Z)</option>
+                    <option value="version">Latest Version</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="app-grid" id="mainAppGrid">
+            </div>
+        
+        <h2 class="section-title" id="topChartsTitle" style="margin-top: 40px;">Top Charts (Highest Rated)</h2>
+        <div class="app-grid" id="topChartsGrid">
+            </div>
+    </div>
+
+    <div class="modal" id="appModal"></div>
+    
+    <div class="modal" id="profileModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2 id="profileTitle">My Account</h2>
+                <span class="close-btn" data-modal-id="profileModal">&times;</span>
+            </div>
+            <div class="profile-body">
+                <div class="profile-info">
+                    <div class="profile-icon-large"><i class="fas fa-user-circle"></i></div>
+                    <h3 id="userName">Welcome, APK User!</h3>
+                    <p id="userEmail" class="email-text">user.example@firebase.com</p>
+                </div>
+
+                <hr class="profile-divider">
+
+                <div class="profile-actions-grid">
+                    <button class="action-btn" id="myDownloadsBtn" title="View installed or downloaded apps">
+                        <i class="fas fa-download"></i>
+                        <span>My Downloads</span>
+                    </button>
+                    <button class="action-btn" id="notificationsBtn" title="Manage application notifications">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </button>
+                    <button class="action-btn" id="openSettingsBtn" title="App preferences and settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="action-btn" id="helpSupportBtn" title="Help Center and Support">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help & Support</span>
+                    </button>
+                </div>
+
+                <hr class="profile-divider">
+
+                <button class="auth-btn log-out" id="authButton">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sign Out</span>
+                </button>
+                <p class="version-text">Store Version 1.0.0 | Powered by Firebase</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <span class="close-btn" data-modal-id="settingsModal">&times;</span>
+            </div>
+            <div class="settings-list">
+                
+                <div class="setting-item" id="autoUpdateSetting">
+                    <i class="fas fa-sync-alt setting-icon"></i>
+                    <div class="setting-info">
+                        <strong>Auto-update apps</strong>
+                        <small>Download updates over Wi-Fi only.</small>
+                    </div>
+                    <label class="setting-toggle">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item" id="themeSetting">
+                    <i class="fas fa-paint-brush setting-icon"></i>
+                    <div class="setting-info">
+                        <strong>Theme</strong>
+                        <small>System Default</small>
+                    </div>
+                    <i class="fas fa-chevron-right setting-icon"></i>
+                </div>
+
+                <div class="setting-item" id="clearCacheSetting">
+                    <i class="fas fa-broom setting-icon"></i>
+                    <div class="setting-info">
+                        <strong>Clear Cache</strong>
+                        <small>Free up 1.5MB of space.</small>
+                    </div>
+                    <i class="fas fa-chevron-right setting-icon"></i>
+                </div>
+
+                <div class="setting-item" id="aboutSetting">
+                    <i class="fas fa-info-circle setting-icon"></i>
+                    <div class="setting-info">
+                        <strong>About APK Store</strong>
+                        <small>View licenses and version.</small>
+                    </div>
+                    <i class="fas fa-chevron-right setting-icon"></i>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // =========================================================
+        // FIREBASE & INITIALIZATION
+        // =========================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+        
+        // !!! IMPORTANT: Replace this with YOUR actual Firebase config details !!!
+        const firebaseConfig = {
+          apiKey: "AIzaSyDEOY44CcIrvvqZnCwrSe9GHiwPCigIpzc",
+          authDomain: "play-store-e84dc.firebaseapp.com",
+          databaseURL: "https://play-store-e84dc-default-rtdb.firebaseio.com",
+          projectId: "play-store-e84dc",
+          storageBucket: "play-store-e84dc.firebasestorage.app",
+          messagingSenderId: "674515432381",
+          appId: "1:674515432381:web:42ec7a05351d6e28a298d4",
+          measurementId: "G-1GMDFHK3F8" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const appsRef = ref(db, 'apps');
+
+        let allApps = [];
+        let currentFilter = 'All';
+        
+        // =========================================================
+        // DOM ELEMENTS & UTILITIES
+        // =========================================================
+        const loadingScreen = document.getElementById('loadingScreen');
+        const mainAppGrid = document.getElementById('mainAppGrid');
+        const topChartsGrid = document.getElementById('topChartsGrid');
+        const searchInput = document.getElementById('searchInput');
+        const categoryTabs = document.getElementById('categoryTabs');
+        const sortSelector = document.getElementById('sortSelector');
+        const topChartsTitle = document.getElementById('topChartsTitle');
+        const currentCategoryTitle = document.getElementById('currentCategoryTitle');
+        
+        // Modals
+        const appModal = document.getElementById('appModal');
+        const profileModal = document.getElementById('profileModal');
+        const settingsModal = document.getElementById('settingsModal');
+
+        // Buttons
+        const openProfileBtn = document.getElementById('openProfileBtn');
+        const authButton = document.getElementById('authButton');
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+
+        // SVG fallback for broken images (efficient Data URL)
+        const PLACEHOLDER_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#f1f8e9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="#0f9d58" font-family="Arial">APK</text></svg>';
+
+        window.handleImageError = function(imageElement) {
+            imageElement.onerror = null; 
+            imageElement.src = PLACEHOLDER_SVG;
+            imageElement.style.padding = '15px'; 
+        };
+
+        function getStars(rating) {
+            let stars = '';
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            for (let i = 0; i < fullStars; i++) {stars += '<i class="fas fa-star"></i>';}
+            if (hasHalfStar) {stars += '<i class="fas fa-star-half-alt"></i>';}
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            for (let i = 0; i < emptyStars; i++) {stars += '<i class="far fa-star"></i>';}
+            return stars;
+        }
+
+        // =========================================================
+        // MODAL HANDLERS (UNIFIED)
+        // =========================================================
+        
+        function openModalById(id) {
+            const modalElement = document.getElementById(id);
+            if (modalElement) {
+                modalElement.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; 
+            }
+        }
+        
+        function closeModalById(id) {
+            const modalElement = document.getElementById(id);
+            if (modalElement) {
+                modalElement.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function handleSignOut() {
+            alert("Signed Out Successfully! (Authentication is simulated.)");
+            closeModalById('profileModal');
+            closeModalById('settingsModal');
+        }
+        
+        window.openAppDetails = function(app) {
+            // Dynamically render the app details content
+            appModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span class="close-btn" data-modal-id="appModal">&times;</span>
+                    </div>
+                    <div class="app-detail-header">
+                        <div class="detail-app-icon">
+                            <img src="${app.imageSrc}" alt="${app.name}" onerror="handleImageError(this)">
+                        </div>
+                        <div class="detail-app-info">
+                            <h2 class="detail-app-name">${app.name}</h2>
+                            <p class="detail-app-developer">${app.developer}</p>
+                            <div class="detail-app-rating">
+                                <div class="stars">${getStars(app.rating)}</div>
+                                <span class="rating-value">${app.rating}</span>
+                            </div>
+                            <button class="install-btn" onclick="window.open('${app.downloadLink}', '_blank')">Install</button>
+                        </div>
+                    </div>
+                    <div class="app-description">
+                        <h3 class="description-title">About this app</h3>
+                        <p>${app.description}</p>
+                    </div>
+                </div>
+            `;
+            // Re-attach close button listener for the dynamically created content
+            appModal.querySelector('.close-btn').addEventListener('click', (event) => {
+                closeModalById(event.currentTarget.getAttribute('data-modal-id'));
+            });
+            openModalById('appModal');
+        }
+        
+        // =========================================================
+        // FILTERING, SORTING, RENDERING LOGIC
+        // =========================================================
+        
+        function renderApps(appsToRender, container) {
+            container.innerHTML = '';
+            
+            if (appsToRender.length === 0) {
+                container.innerHTML = '<p class="no-results">😔 No apps found matching your criteria.</p>';
+                return;
+            }
+            
+            appsToRender.forEach(app => {
+                const appCard = document.createElement('div');
+                appCard.className = 'app-card';
+                const categoryTag = app.category || 'Utility';
+                
+                appCard.innerHTML = `
+                    <div class="app-icon">
+                        <img src="${app.imageSrc}" alt="${app.name}" onerror="handleImageError(this)">
+                    </div>
+                    <div class="app-info">
+                        <h3 class="app-name">${app.name}</h3>
+                        <p class="app-developer">${app.developer}</p>
+                        <div class="app-rating">
+                            <div class="stars">${getStars(app.rating)}</div>
+                            <span class="rating-value">${app.rating}</span>
+                        </div>
+                        <span class="app-detail-tag">${categoryTag.toUpperCase()}</span>
+                    </div>
+                `;
+                appCard.addEventListener('click', () => window.openAppDetails(app)); 
+                container.appendChild(appCard);
+            });
+        }
+        
+        function filterAndSortApps() {
+            let filteredApps = allApps;
+            const sortKey = sortSelector.value;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // 1. FILTERING BY CATEGORY
+            if (currentFilter !== 'All') {
+                filteredApps = filteredApps.filter(app => 
+                    app.category && app.category.toLowerCase() === currentFilter.toLowerCase()
+                );
+            }
+            
+            // 2. SEARCHING
+            if (searchTerm) {
+                filteredApps = filteredApps.filter(app => 
+                    app.name.toLowerCase().includes(searchTerm) || 
+                    app.developer.toLowerCase().includes(searchTerm) ||
+                    (app.category && app.category.toLowerCase().includes(searchTerm))
+                );
+                currentCategoryTitle.textContent = `Search Results for "${searchInput.value}"`;
+                topChartsTitle.style.display = 'none';
+                topChartsGrid.style.display = 'none';
+            } else {
+                currentCategoryTitle.textContent = currentFilter === 'All' ? 'Featured Apps' : `${currentFilter} Apps`;
+                topChartsTitle.style.display = 'block';
+                topChartsGrid.style.display = 'grid';
+            }
+            
+            // 3. SORTING
+            filteredApps.sort((a, b) => {
+                if (sortKey === 'rating') return b.rating - a.rating;
+                if (sortKey === 'name') return a.name.localeCompare(b.name);
+                if (sortKey === 'version') return b.version.localeCompare(a.version); 
+                return 0;
+            });
+
+            // 4. RENDERING
+            renderApps(filteredApps, mainAppGrid);
+            
+            if (!searchTerm) {
+                const topApps = [...allApps].sort((a, b) => b.rating - a.rating).slice(0, 8);
+                renderApps(topApps, topChartsGrid);
+            } else {
+                 topChartsGrid.innerHTML = '';
+            }
+        }
+
+        // =========================================================
+        // EVENT LISTENERS SETUP
+        // =========================================================
+        function setupEventListeners() {
+            
+            // --- Core App Listeners (Category, Search, Sort) ---
+            categoryTabs.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const activeBtn = categoryTabs.querySelector('.active');
+                    if (activeBtn) activeBtn.classList.remove('active');
+                    button.classList.add('active');
+                    currentFilter = button.getAttribute('data-category');
+                    searchInput.value = ''; 
+                    filterAndSortApps();
+                });
+            });
+            
+            searchInput.addEventListener('input', filterAndSortApps);
+            sortSelector.addEventListener('change', filterAndSortApps);
+            
+            // --- Modal & User Actions ---
+            openProfileBtn.addEventListener('click', () => openModalById('profileModal'));
+            authButton.addEventListener('click', handleSignOut);
+            
+            // Profile -> Settings Link
+            openSettingsBtn.addEventListener('click', () => {
+                closeModalById('profileModal');
+                openModalById('settingsModal');
+            });
+            
+            // Simulated Menu Actions
+            document.getElementById('myDownloadsBtn').addEventListener('click', () => alert("Navigating to My Downloads (Simulated)."));
+            document.getElementById('notificationsBtn').addEventListener('click', () => alert("Notification settings (Simulated)."));
+            document.getElementById('helpSupportBtn').addEventListener('click', () => alert("Opening Help Center (Simulated)."));
+            document.getElementById('themeSetting').addEventListener('click', () => alert("Theme changing is a simulated feature."));
+            document.getElementById('clearCacheSetting').addEventListener('click', () => alert("Cache Cleared! (Simulated)"));
+            document.getElementById('aboutSetting').addEventListener('click', () => alert("Showing About information (Simulated)."));
+
+
+            // Unified Close button handler
+            document.querySelectorAll('.close-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const modalId = event.currentTarget.getAttribute('data-modal-id');
+                    if (modalId) closeModalById(modalId);
+                });
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', (event) => {
+                if (event.target === profileModal) closeModalById('profileModal');
+                if (event.target === settingsModal) closeModalById('settingsModal');
+                if (event.target === appModal) closeModalById('appModal');
+            });
+        }
+
+        // =========================================================
+        // MAIN APPLICATION ENTRY POINT
+        // =========================================================
+        function init() {
+            // Live listener for Firebase data fetching
+            onValue(appsRef, (snapshot) => {
+                const data = snapshot.val();
+                allApps = [];
+                for (let id in data) {
+                    allApps.push({ 
+                        id, 
+                        ...data[id], 
+                        rating: parseFloat(data[id].rating) || 0,
+                        version: data[id].version || '0.0.1'
+                    });
+                }
+                
+                filterAndSortApps(); 
+                loadingScreen.classList.add('hidden');
+            }, (error) => {
+                console.error("Error fetching data:", error);
+                loadingScreen.innerHTML = '<p style="color: #ea4335; font-size: 18px; font-weight: 500;">Error loading apps. Check your Firebase config and connection.</p>';
+            });
+
+            setupEventListeners();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
