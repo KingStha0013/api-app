@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEB GPA Calculator - KingamerNep</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* --- CSS Styling --- */
+        :root {
+            --background-color: #f4f7f9;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --border-color: #e0e0e0;
+            --grade-A: #28a745; /* Success Green */
+            --grade-B: #007bff; /* Primary Blue */
+            --grade-C: #ff8c00; /* Dark Orange */
+            --grade-D: #dc3545; /* Danger Red */
+        }
+
+        body.dark-mode {
+            --background-color: #1a1a2e;
+            --card-background: #2c2c43;
+            --text-color: #e6e6e6;
+            --primary-color: #8c9eff;
+            --secondary-color: #a0a0a0;
+            --danger-color: #ff6b6b;
+            --success-color: #4cd964;
+            --warning-color: #ffd700;
+            --info-color: #00bcd4;
+            --border-color: #444466;
+            --grade-A: #4cd964;
+        }
+
+        /* --- Base Styling --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--background-color); 
+            color: var(--text-color); 
+            transition: background-color 0.3s, color 0.3s; 
+            min-height: 100vh; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 20px auto; 
+            padding: 0 15px; 
+            display: grid; 
+            gap: 20px; 
+            grid-template-columns: 1fr;
+        }
+
+        /* --- New Ad Container Style - IMPROVED --- */
+        #ad-container {
+            max-width: 1200px; 
+            margin: 10px auto; 
+            padding: 0 15px;
+            text-align: center;
+            min-height: 50px; 
+            border: 1px dashed var(--border-color);
+            background-color: var(--card-background);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Style for the ad placeholder text */
+        #ad-placeholder { 
+            color: var(--secondary-color); 
+            font-size: 0.8rem; 
+            padding: 5px;
+        }
+        /* --- END New Ad Container Style --- */
+
+
+        /* --- Components --- */
+        header { 
+            background-color: var(--card-background); 
+            padding: 10px 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        header h1 {
+            font-size: 1.5rem; 
+            margin: 0;
+        }
+        
+        .header-actions { display: flex; gap: 10px; }
+        .card { 
+            background-color: var(--card-background); 
+            border-radius: 8px; 
+            padding: 20px; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+        }
+
+        button, select, input { 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            font-size: 1rem; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-color); 
+            background-color: var(--card-background);
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        button { cursor: pointer; font-weight: 600; border: none; transition: background-color 0.2s, transform 0.1s; }
+        button:hover { transform: translateY(-1px); }
+        .primary-btn { background-color: var(--primary-color); color: white; }
+        .secondary-btn { background-color: var(--secondary-color); color: white; }
+        .danger-btn { background-color: var(--danger-color); color: white; }
+        .share-btn { background-color: var(--success-color); color: white; }
+
+        /* --- Input Details --- */
+        #configPanel { display: flex; flex-direction: column; gap: 15px; }
+        #configPanel > div { display: flex; flex-direction: column; gap: 5px; }
+        .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .subjects-panel h2 { font-size: 1.3rem; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: 15px; }
+        .subject-row { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            align-items: center; 
+            padding: 15px 0; 
+            border-bottom: 1px dashed var(--border-color); 
+        }
+        .subject-row:last-child { border-bottom: none; }
+
+        .marks-input-group {
+            display: flex;
+            gap: 10px;
+            flex-grow: 2;
+        }
+
+        .subject-row input[type="text"] { flex: 2; min-width: 150px; }
+        .subject-row input[type="number"], .subject-row select { flex: 1; min-width: 80px; }
+        .fail-info { 
+            font-size: 0.8rem; 
+            color: var(--secondary-color); 
+            min-width: 50px; 
+            text-align: center; 
+            white-space: nowrap; 
+            font-weight: 600; 
+        }
+        .fail-info[style*="danger-color"] { color: var(--danger-color) !important; }
+
+        /* --- Results Panel Hiding Logic --- */
+        #resultsPanel { 
+            transition: opacity 0.3s, max-height 0.5s ease-out;
+            overflow: hidden;
+            max-height: 2000px; 
+        }
+
+        .hidden {
+            opacity: 0;
+            max-height: 0;
+            padding: 0 20px; 
+            margin-top: 0;
+            margin-bottom: 0;
+            transition: all 0.5s ease-out;
+        }
+
+        /* --- Mobile View Toggling (IMPORTANT) --- */
+        @media (max-width: 767px) {
+            .container { display: block; }
+            .input-view #resultsPanel { display: none !important; }
+            .results-view #subjectsPanel,
+            .results-view #configPanel { display: none !important; }
+
+            #backToInputBtn { display: inline-block !important; }
+            #viewResultsBtn { display: inline-block !important; }
+        }
+
+        /* --- Desktop View (Two Columns) --- */
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 2fr;
+                grid-template-areas:
+                    "config results"
+                    "subjects results";
+            }
+            #configPanel { grid-area: config; }
+            #subjectsPanel { grid-area: subjects; }
+            #resultsPanel { grid-area: results; }
+
+            #backToInputBtn { display: none !important; }
+            #viewResultsBtn { display: none !important; }
+            .subject-row { flex-wrap: nowrap; }
+            .marks-input-group { flex-grow: 1; max-width: 250px; }
+            .marks-input-group input { min-width: 0; }
+        }
+
+        /* --- Results Details --- */
+        .overall-results { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+            text-align: center; 
+            background-color: var(--background-color); 
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .overall-gpa-meter { 
+            width: 130px; 
+            height: 130px; 
+            border-radius: 50%; 
+            border: 8px solid var(--border-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            transition: border-color 0.5s;
+        }
+        .gpa-display span { 
+            font-size: 3rem; 
+            font-weight: 700; 
+            display: block; 
+            line-height: 1; 
+            transition: color 0.5s;
+        }
+        .gpa-display small {
+            font-size: 0.7rem;
+            color: var(--secondary-color);
+        }
+
+        /* Last Result Banner */
+        #previousResultBanner {
+            display:none; 
+            padding:15px; 
+            background-color: var(--info-color); 
+            color: white; 
+            border-radius: 8px; 
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #previousResultBanner p { margin: 0; }
+        #previousResultBanner strong { color: #fff; }
+        #previousResultBanner button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 5px 12px;
+            font-size: 0.9rem;
+        }
+
+        #resultsTable { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        #resultsTable th, #resultsTable td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        #resultsTable th { background-color: var(--background-color); }
+
+        .progress-bar-container { background-color: var(--border-color); border-radius: 5px; overflow: hidden; height: 20px; position: relative; width: 100%; }
+        .progress-bar { height: 100%; width: 0; transition: width 1s ease-out, background-color 0.3s; display: flex; align-items: center; padding-left: 5px; color: white; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+
+        /* Grade Colors */
+        .grade-A-color { background-color: var(--grade-A); }
+        .grade-B-color { background-color: var(--grade-B); }
+        .grade-C-color { background-color: var(--grade-C); }
+        .grade-D-color { background-color: var(--grade-D); }
+
+        .grade-text-A { color: var(--grade-A); font-weight: 700; }
+        .grade-text-B { color: var(--grade-B); font-weight: 700; }
+        .grade-text-C { color: var(--grade-C); font-weight: 700; }
+        .grade-text-D { color: var(--grade-D); font-weight: 700; }
+
+        .export-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+        .export-actions button { flex-grow: 1; min-width: 120px; }
+        footer { text-align: center; padding: 15px; margin-top: 30px; border-top: 1px solid var(--border-color); color: var(--secondary-color); }
+
+        /* --- Modal Styling --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 10% auto; 
+            padding: 25px;
+            border-radius: 8px;
+            width: 85%; 
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-btn { 
+            color: var(--text-color); 
+            float: right; 
+            font-size: 30px; 
+            font-weight: bold; 
+            line-height: 1; 
+            cursor: pointer; 
+            margin: -5px -5px 0 0; 
+        }
+        .modal-content h2 { 
+            font-size: 1.5rem;
+            margin-bottom: 15px; 
+            border-bottom: 2px solid var(--primary-color); 
+            padding-bottom: 5px; 
+        }
+        .modal-content p { color: var(--text-color); }
+
+        /* --- Toast Notification System --- */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column-reverse; 
+            gap: 10px;
+        }
+        .toast {
+            background-color: var(--card-background);
+            color: var(--text-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            max-width: 350px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            display: flex;
+            align-items: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast-icon { margin-right: 10px; font-size: 1.2rem; }
+        .toast-success { border-left: 5px solid var(--success-color); }
+        .toast-success .toast-icon { color: var(--success-color); }
+        .toast-danger { border-left: 5px solid var(--danger-color); }
+        .toast-danger .toast-icon { color: var(--danger-color); }
+        .toast-info { border-left: 5px solid var(--info-color); }
+        .toast-info .toast-icon { color: var(--info-color); }
+        
+        /* --- New Creator Photo Styling --- */
+        .creator-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .creator-photo-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; 
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 4px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+        
+        .creator-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .creator-icon { 
+             font-size: 50px;
+             line-height: 92px; 
+             color: var(--secondary-color);
+        }
+
+        .creator-name { font-size: 1.2rem; margin-top: 5px; color: var(--text-color); }
+        .app-description { font-size: 0.9rem; color: var(--secondary-color); margin-top: 5px; }
+
+    </style>
+</head>
+<body class="input-view"> 
+    <header>
+        <h1>🇳🇵 NEB GPA Calculator</h1>
+        <div class="header-actions">
+            <button id="aboutAppBtn" aria-label="About the App" class="secondary-btn"><i class="fas fa-info-circle"></i> About</button>
+            <button id="darkModeToggle" aria-label="Toggle dark/light mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ADVERTISEMENT CONTAINER WITH FALLBACK/BORDER IMPROVEMENT -->
+    <div id="ad-container">
+        <!-- The placeholder which will be visible if the ad script is blocked or fails -->
+        <span id="ad-placeholder">Advertisement Loading... (If visible, ad is likely blocked or inactive for this domain)</span>
+        
+        <!-- The original ad script block -->
+        <script type="text/javascript"> 	atOptions = { 		'key' : 'fa002bc06f6ffd45943c2a04fda12fd5', 		'format' : 'iframe', 		'height' : 50, 		'width' : 320, 		'params' : {} 	}; </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/fa002bc06f6ffd45943c2a04fda12fd5/invoke.js"></script>
+    </div>
+    <!-- END ADVERTISEMENT CONTAINER -->
+    
+    <main class="container">
+        <div id="inputBox">
+            <section id="configPanel" class="card">
+                <div>
+                    <label for="subjectStream">Select Stream Preset:</label>
+                    <select id="subjectStream">
+                        <option value="custom">Custom Subject Setup</option>
+                        <option value="science">Science (6 Subjects)</option>
+                        <option value="management">Management (6 Subjects)</option>
+                        <option value="humanities">Humanities (6 Subjects)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="subjectCount">No. of Subjects:</label>
+                    <select id="subjectCount">
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6" selected>6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <button id="addSubjectBtn" class="primary-btn"><i class="fas fa-plus-circle"></i> Add Subject</button>
+
+                <div class="action-group">
+                    <button id="calculateBtn" class="primary-btn"><i class="fas fa-calculator"></i> Calculate GPA</button>
+                    <button id="viewResultsBtn" class="secondary-btn" style="display:none;"><i class="fas fa-chart-bar"></i> View Results</button>
+                </div>
+            </section>
+
+            <section id="subjectsPanel" class="subjects-panel card">
+                <h2>Subject Details</h2>
+                <div id="subjectsContainer">
+                    </div>
+            </section>
+        </div>
+
+        <section id="resultsPanel" class="results-panel card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>GPA Results</h2>
+                <button id="backToInputBtn" class="secondary-btn" style="display:none;"><i class="fas fa-arrow-left"></i> Back to Input</button>
+            </div>
+
+            <div id="previousResultBanner" style="display:none;">
+                <p>Last Calculated GPA: <strong id="lastGPA">--</strong> on <span id="lastCalcDate">--</span></p>
+                <button id="showLastResultBtn" class="secondary-btn"><i class="fas fa-history"></i> Show Last Result</button>
+            </div>
+
+            <div class="overall-results">
+                <div class="overall-gpa-meter">
+                    <div class="gpa-display">
+                        <span id="overallGPA">--</span>
+                        <small>Overall GPA</small>
+                    </div>
+                </div>
+                <div class="overall-percentage">
+                    <p>Overall Percentage: <strong id="overallPercentage">--</strong></p>
+                    <p>Total Marks: <strong id="totalMarks">0 / 0</strong></p>
+                </div>
+            </div>
+
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>%</th>
+                        <th>Grade</th>
+                        <th>GPA</th>
+                    </tr>
+                </thead>
+                <tbody id="perSubjectResults">
+                    </tbody>
+            </table>
+
+            <div class="export-actions">
+                <button id="shareBtn" class="share-btn"><i class="fas fa-share-alt"></i> Share Results</button>
+                <button id="exportPdfBtn" class="secondary-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                <button id="exportCsvBtn" class="secondary-btn"><i class="fas fa-file-csv"></i> Export CSV</button>
+                <button id="resetBtn" class="danger-btn"><i class="fas fa-undo"></i> Reset All</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>About NEB GPA Calculator</h2>
+
+            <div class="creator-info">
+                <div class="creator-photo-container">
+                    <img src="King.jpg" alt="Author's Photo" class="creator-photo" 
+                         onerror="this.onerror=null; this.classList.add('hidden'); document.querySelector('#aboutModal .creator-icon').classList.remove('hidden');">
+                    <i class="fas fa-user-circle creator-icon" style="display: none;"></i>
+                </div>
+                <h3 class="creator-name">David Shrestha</h3>
+                <p class="app-description">This application is a GPA calculator designed for students under the Nepali National Examinations Board (NEB) system.</p>
+            </div>
+
+            <div class="other-details">
+                <p><strong>App Details:</strong> This is an open-source tool that uses **Local Storage** to save your subject inputs and last calculated results directly in your browser.</p>
+                <p><strong>Creator's Link:</strong> <a href="King.jpg" target="_blank">View Creator's Photo/Details</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2 id="confirmTitle">Confirm Action</h2>
+            <p id="confirmMessage" style="margin-bottom: 20px;">Are you sure?</p>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="confirmCancelBtn" class="secondary-btn">Cancel</button>
+                <button id="confirmOkBtn" class="danger-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <footer>
+        <p>&copy; 2025 David Shrestha| Made with ❤️ by KingamerNep</p>
+    </footer>
+
+    <script>
+        // --- JavaScript Logic ---
+
+        // --- CONSTANTS ---
+        const GRADING_SCALE = [
+            { min: 90, max: 100, grade: 'A+', gpa: 4.0, colorClass: 'grade-A' },
+            { min: 80, max: 89, grade: 'A', gpa: 3.6, colorClass: 'grade-A' },
+            { min: 70, max: 79, grade: 'B+', gpa: 3.2, colorClass: 'grade-B' },
+            { min: 60, max: 69, grade: 'B', gpa: 2.8, colorClass: 'grade-B' },
+            { min: 50, max: 59, grade: 'C+', gpa: 2.4, colorClass: 'grade-C' },
+            { min: 40, max: 49, grade: 'C', gpa: 2.0, colorClass: 'grade-C' },
+            { min: 0, max: 39, grade: 'D/F', gpa: 0.0, colorClass: 'grade-D' }
+        ];
+
+        // NEB Passing Marks
+        const PASS_MARKS = {
+            100: 35, 75: 26, 50: 17,
+            theory_75: 26, 
+            practical_25: 9  
+        };
+
+        const SUBJECT_PRESETS = {
+            science: [
+                { name: 'Nepali', full: 100 },
+                { name: 'English', full: 100 },
+                { name: 'Physics', full: 100 },
+                { name: 'Chemistry', full: 100 },
+                { name: 'Mathematics', full: 100 },
+                { name: 'Biology / Comp Science', full: 100 },
+            ],
+            management: [
+                { name: 'Nepali', full: 100 },
+                { name: 'English', full: 100 },
+                { name: 'Basic Math/Economics', full: 100 },
+                { name: 'Accountancy', full: 100 },
+                { name: 'Business Studies', full: 100 },
+                { name: 'Marketing / Finance', full: 100 }
+            ],
+            humanities: [
+                { name: 'Nepali', full: 100 },
+                { name: 'English', full: 100 },
+                { name: 'Social Studies', full: 100 },
+                { name: 'Major I (e.g. History)', full: 100 },
+                { name: 'Major II (e.g. Sociology)', full: 100 },
+                { name: 'Minor (e.g. Psychology)', full: 100 }
+            ],
+            custom: [] 
+        };
+
+        // --- DOM Elements & State ---
+        let subjectCounter = 0; 
+        const subjectsContainer = document.getElementById('subjectsContainer');
+        const subjectCountDropdown = document.getElementById('subjectCount');
+        const subjectStreamDropdown = document.getElementById('subjectStream');
+        const resultsTableBody = document.getElementById('perSubjectResults');
+        const overallGPADisplay = document.getElementById('overallGPA');
+        const overallPercentageDisplay = document.getElementById('overallPercentage');
+        const totalMarksDisplay = document.getElementById('totalMarks');
+        const resultsPanel = document.getElementById('resultsPanel'); 
+        const viewResultsBtn = document.getElementById('viewResultsBtn');
+        const previousResultBanner = document.getElementById('previousResultBanner');
+        const lastGPADisplay = document.getElementById('lastGPA');
+        const lastCalcDateDisplay = document.getElementById('lastCalcDate');
+        const body = document.body;
+        const toastContainer = document.getElementById('toastContainer');
+        const adPlaceholder = document.getElementById('ad-placeholder'); 
+
+        // Modal elements
+        const aboutModal = document.getElementById('aboutModal');
+        const aboutAppBtn = document.getElementById('aboutAppBtn');
+        const closeBtn = document.querySelector('#aboutModal .close-btn');
+
+        // Custom Confirm Modal Elements
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+        const confirmOkBtn = document.getElementById('confirmOkBtn');
+        let confirmCallback = null; 
+
+        // --- NEW CORE FUNCTION: Toast Notification ---
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            let iconClass = 'fa-info-circle'; 
+            let toastClass = 'toast-info';
+
+            if (type === 'success') {
+                iconClass = 'fa-check-circle';
+                toastClass = 'toast-success';
+            } else if (type === 'error') {
+                iconClass = 'fa-exclamation-circle';
+                toastClass = 'toast-danger';
+            }
+
+            toast.classList.add('toast', toastClass);
+            toast.innerHTML = `
+                <i class="fas ${iconClass} toast-icon"></i>
+                <div>${message}</div>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
+
+        // --- NEW CORE FUNCTION: Custom Confirmation Dialog ---
+        function showCustomConfirm(title, message, onConfirm) {
+            confirmTitle.textContent = title;
+            confirmMessage.innerHTML = message;
+            confirmCallback = onConfirm; 
+            confirmModal.style.display = "block";
+        }
+
+        function handleConfirmOk() {
+            confirmModal.style.display = "none";
+            if (confirmCallback) {
+                confirmCallback(true);
+            }
+            confirmCallback = null; 
+        }
+
+        function handleConfirmCancel() {
+            confirmModal.style.display = "none";
+            if (confirmCallback) {
+                confirmCallback(false);
+            }
+            confirmCallback = null;
+        }
+
+
+        // --- CORE FUNCTION: View Management ---
+        function toggleView(view) {
+            if (window.innerWidth < 768) {
+                if (view === 'results') {
+                    resultsPanel.classList.remove('hidden');
+                    body.classList.remove('input-view');
+                    body.classList.add('results-view');
+                } else {
+                    body.classList.remove('results-view');
+                    body.classList.add('input-view');
+                    resultsPanel.classList.add('hidden');
+                }
+            }
+        }
+
+        // --- 1. Subject Management Functions ---
+
+        function getFullMarksDropdown(selected = 100) {
+            return `
+                <select class="full-marks">
+                    <option value="100" ${selected === 100 ? 'selected' : ''}>100</option>
+                    <option value="75" ${selected === 75 ? 'selected' : ''}>75</option>
+                    <option value="50" ${selected === 50 ? 'selected' : ''}>50</option>
+                </select>
+            `;
+        }
+
+        function getMarksInputFields(fullMarks, obtained = '', theory = '', practical = '') {
+            const isSplit = fullMarks === 100;
+            if (isSplit) {
+                return `
+                    <div class="marks-input-group" data-split="true">
+                        <input type="number" class="marks-theory" placeholder="Theory (Max 75)" min="0" max="75" value="${theory}">
+                        <input type="number" class="marks-practical" placeholder="Practical (Max 25)" min="0" max="25" value="${practical}">
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="marks-input-group" data-split="false">
+                        <input type="number" class="marks-obtained" placeholder="Obtained (Max ${fullMarks})" min="0" max="${fullMarks}" value="${obtained}">
+                    </div>
+                `;
+            }
+        }
+
+        function updateRowValidationAndSave(row) {
+            const fullMarksSelect = row.querySelector('.full-marks');
+            const fullMarks = parseInt(fullMarksSelect.value);
+            const inputGroup = row.querySelector('.marks-input-group');
+            const isCurrentlySplit = inputGroup.dataset.split === 'true';
+            const shouldBeSplit = fullMarks === 100;
+
+            // 1. Regenerate input fields if fullMarks changes
+            if (isCurrentlySplit !== shouldBeSplit) {
+
+                let currentObtained = '';
+                let currentTheory = '';
+                let currentPractical = '';
+
+                if(isCurrentlySplit) {
+                    currentTheory = row.querySelector('.marks-theory')?.value || '';
+                    currentPractical = row.querySelector('.marks-practical')?.value || '';
+                    currentObtained = (parseFloat(currentTheory) || 0) + (parseFloat(currentPractical) || 0);
+                } else {
+                    currentObtained = row.querySelector('.marks-obtained')?.value || '';
+                }
+
+                inputGroup.outerHTML = getMarksInputFields(fullMarks, currentObtained, currentTheory, currentPractical);
+
+                // Re-select the row to get the new elements
+                const newRow = document.querySelector(`.subject-row[data-id="${row.dataset.id}"]`);
+                setupMarkInputListeners(newRow);
+                updateRowValidationAndSave(newRow); // Re-run validation for new max values
+                return; 
+            }
+
+            // 2. Run Mark Validation and Display Pass/Fail Status
+            const failInfoElement = row.querySelector('.fail-info');
+            let isFailed = false;
+
+            if (fullMarks === 100) {
+                const theoryInput = row.querySelector('.marks-theory');
+                const practicalInput = row.querySelector('.marks-practical');
+                const theoryValue = parseFloat(theoryInput.value) || 0;
+                const practicalValue = parseFloat(practicalInput.value) || 0;
+
+                // Clamp values
+                if (theoryValue > 75) theoryInput.value = 75;
+                if (theoryValue < 0 || isNaN(theoryValue)) theoryInput.value = 0;
+
+                if (practicalValue > 25) practicalInput.value = 25;
+                if (practicalValue < 0 || isNaN(practicalValue)) practicalInput.value = 0;
+
+                // Check fail condition (must pass BOTH theory and practical)
+                if (theoryValue < PASS_MARKS.theory_75 || practicalValue < PASS_MARKS.practical_25) {
+                    isFailed = true;
+                }
+
+            } else {
+                const obtainedInput = row.querySelector('.marks-obtained');
+                const obtained = parseFloat(obtainedInput.value) || 0;
+                const failMark = PASS_MARKS[fullMarks];
+
+                // Clamp values
+                if (obtained > fullMarks) obtainedInput.value = fullMarks;
+                if (obtained < 0 || isNaN(obtained)) obtainedInput.value = 0;
+
+                // Check fail condition
+                if (obtained < failMark) {
+                    isFailed = true;
+                }
+
+                obtainedInput.setAttribute('max', fullMarks);
+            }
+
+            failInfoElement.textContent = isFailed ? "Fail!" : "";
+            failInfoElement.style.color = isFailed ? 'var(--danger-color)' : 'var(--secondary-color)';
+
+            saveSubjectsToLocalStorage();
+        }
+
+        function setupMarkInputListeners(row) {
+            const fullMarks = parseInt(row.querySelector('.full-marks').value);
+            const fullMarksSelect = row.querySelector('.full-marks');
+
+            // Remove all existing listeners to prevent duplicates
+            fullMarksSelect.removeEventListener('change', row._fullMarksChangeListener);
+            row.querySelector('.remove-btn').removeEventListener('click', row._removeListener);
+            row.querySelector('.subject-name').removeEventListener('input', row._nameListener);
+
+            if (row.querySelector('.marks-theory')) {
+                row.querySelector('.marks-theory').removeEventListener('input', row._theoryListener);
+                row.querySelector('.marks-practical').removeEventListener('input', row._practicalListener);
+
+                row._theoryListener = () => updateRowValidationAndSave(row);
+                row._practicalListener = () => updateRowValidationAndSave(row);
+
+                row.querySelector('.marks-theory').addEventListener('input', row._theoryListener);
+                row.querySelector('.marks-practical').addEventListener('input', row._practicalListener);
+
+            } else if (row.querySelector('.marks-obtained')) {
+                row.querySelector('.marks-obtained').removeEventListener('input', row._obtainedListener);
+
+                row._obtainedListener = () => updateRowValidationAndSave(row);
+                row.querySelector('.marks-obtained').addEventListener('input', row._obtainedListener);
+            }
+        }
+
+        function setupRowListeners(row, id) {
+            // Setup Mark Listeners (which includes validation)
+            setupMarkInputListeners(row);
+
+            // Full Marks Change Listener (Requires re-running validation and input field check)
+            row._fullMarksChangeListener = () => updateRowValidationAndSave(row);
+            row.querySelector('.full-marks').addEventListener('change', row._fullMarksChangeListener);
+
+            // Remove Button Listener
+            row._removeListener = () => removeSubjectRow(id);
+            row.querySelector('.remove-btn').addEventListener('click', row._removeListener);
+
+            // Name Change Listener
+            row._nameListener = () => saveSubjectsToLocalStorage();
+            row.querySelector('.subject-name').addEventListener('input', row._nameListener);
+        }
+
+        function addSubjectRow(initialName = `Subject ${subjectCounter + 1}`, initialObtained = '', initialTheory = '', initialPractical = '', initialFull = 100) {
+            subjectCounter++;
+            const rowId = subjectCounter;
+
+            const row = document.createElement('div');
+            row.classList.add('subject-row');
+            row.dataset.id = rowId;
+
+            row.innerHTML = `
+                <input type="text" class="subject-name" placeholder="Subject Name" value="${initialName}">
+                ${getFullMarksDropdown(initialFull)}
+                ${getMarksInputFields(initialFull, initialObtained, initialTheory, initialPractical)}
+                <span class="fail-info"></span>
+                <button class="remove-btn" title="Remove Subject" class="danger-btn"><i class="fas fa-trash-alt"></i></button>
+            `;
+            subjectsContainer.appendChild(row);
+
+            setupRowListeners(row, rowId);
+            updateRowValidationAndSave(row); // Initial validation and save
+        }
+
+        function removeSubjectRow(id) {
+            const rowToRemove = document.querySelector(`.subject-row[data-id="${id}"]`);
+            if (rowToRemove) {
+                rowToRemove.remove();
+                saveSubjectsToLocalStorage(); 
+                showToast(`Subject removed.`, 'info', 2000);
+
+                if (subjectStreamDropdown.value === 'custom') {
+                    subjectCountDropdown.value = subjectsContainer.children.length;
+                }
+            }
+        }
+
+        function applyPreset(selectedStream, preset) {
+            subjectCountDropdown.value = preset.length;
+            subjectsContainer.innerHTML = '';
+            subjectCounter = 0; 
+
+            preset.forEach(sub => {
+                addSubjectRow(sub.name, '', '', '', sub.full);
+            });
+
+            localStorage.setItem('nebGpaStream', selectedStream);
+            saveSubjectsToLocalStorage();
+            showToast(`Switched to '${selectedStream}' preset.`, 'info');
+        }
+
+        function handleStreamChange() {
+            const selectedStream = subjectStreamDropdown.value;
+            const preset = SUBJECT_PRESETS[selectedStream];
+
+            if (selectedStream === 'custom') {
+                subjectCountDropdown.value = subjectsContainer.children.length; 
+                generateInitialSubjects(false, false); 
+            } else {
+                const currentChildrenCount = subjectsContainer.children.length;
+
+                if (currentChildrenCount > 0) {
+                     const message = `Switching to the '<strong>${selectedStream}</strong>' preset will **clear all current inputs** and set the count to ${preset.length}. Continue?`;
+
+                    showCustomConfirm("Clear Inputs?", message, (confirmed) => {
+                        if (confirmed) {
+                            applyPreset(selectedStream, preset);
+                        } else {
+                            // Revert dropdown to saved or 'custom' state if canceled
+                            const savedStream = localStorage.getItem('nebGpaStream') || 'custom';
+                            subjectStreamDropdown.value = savedStream; 
+                        }
+                    });
+                } else {
+                    applyPreset(selectedStream, preset);
+                }
+            }
+        }
+
+        function generateInitialSubjects(loadDataFromStorage = false, checkSubjectCountChange = true) {
+             const currentChildrenCount = subjectsContainer.children.length;
+             const targetCount = parseInt(subjectCountDropdown.value);
+             const savedSubjects = loadDataFromStorage ? JSON.parse(localStorage.getItem('nebGpaSubjects') || '[]') : [];
+
+             if (checkSubjectCountChange && currentChildrenCount > 0 && targetCount !== currentChildrenCount) {
+                 const message = `Changing the subject count to ${targetCount} will **clear all current inputs**. Continue?`;
+                 showCustomConfirm("Clear Inputs?", message, (confirmed) => {
+                     if (confirmed) {
+                         performSubjectGeneration(targetCount, savedSubjects);
+                     } else {
+                         subjectCountDropdown.value = currentChildrenCount; 
+                     }
+                 });
+                 return;
+             }
+
+             performSubjectGeneration(targetCount, savedSubjects);
+        }
+
+        function performSubjectGeneration(targetCount, savedSubjects) {
+            subjectsContainer.innerHTML = '';
+            subjectCounter = 0; 
+
+            for (let i = 0; i < targetCount; i++) {
+                const sub = savedSubjects[i];
+                if (sub) {
+                    addSubjectRow(
+                        sub.name, 
+                        sub.obtained, 
+                        sub.theory, 
+                        sub.practical, 
+                        parseInt(sub.full) || 100
+                    );
+                } else {
+                    addSubjectRow(`Subject ${i + 1}`, '', '', '', 100);
+                }
+            }
+
+            // Clear results view when inputs change
+            resultsPanel.classList.add('hidden');
+            viewResultsBtn.style.display = 'none';
+            resultsTableBody.innerHTML = ''; 
+            overallGPADisplay.textContent = '--';
+            overallPercentageDisplay.textContent = '--';
+            totalMarksDisplay.textContent = '0 / 0';
+            updateCircularMeter(0);
+        }
+
+        // --- 2. GPA Calculation Logic ---
+
+        function getGradeDetails(percentage, fullMarks, obtainedTheory, obtainedPractical) {
+            let isFailed = false;
+
+            if (fullMarks === 100) {
+                if (obtainedTheory < PASS_MARKS.theory_75 || obtainedPractical < PASS_MARKS.practical_25) {
+                    isFailed = true;
+                }
+            } else {
+                if (obtainedTheory < PASS_MARKS[fullMarks]) { 
+                    isFailed = true;
+                }
+            }
+
+            if (isFailed) {
+                // Return the lowest grade/GPA for failure
+                return GRADING_SCALE[GRADING_SCALE.length - 1]; 
+            }
+
+            const normalizedPercentage = parseFloat(percentage);
+            // Find the highest grade rule that the percentage satisfies
+            const gradeRule = GRADING_SCALE.find(rule => normalizedPercentage >= rule.min);
+
+            return gradeRule || GRADING_SCALE[GRADING_SCALE.length - 1];
+        }
+
+        function calculateGPA() {
+            const subjectRows = document.querySelectorAll('.subject-row');
+
+            let totalWeightedGPA = 0; 
+            let totalFullMarks = 0;
+            let totalObtainedMarks = 0;
+            const subjectResultsData = []; 
+            let hasError = false;
+
+            resultsTableBody.innerHTML = ''; 
+
+            if (subjectRows.length === 0) {
+                showToast("Please add subjects before calculating.", 'error');
+                return;
+            }
+
+            for (const row of subjectRows) {
+                const name = row.querySelector('.subject-name').value || `Subject ${row.dataset.id}`;
+                const full = parseInt(row.querySelector('.full-marks').value);
+
+                let obtained = 0;
+                let obtainedTheory = 0;
+                let obtainedPractical = 0;
+
+                if (full === 100) {
+                    // Split marks
+                    obtainedTheory = parseFloat(row.querySelector('.marks-theory').value) || 0;
+                    obtainedPractical = parseFloat(row.querySelector('.marks-practical').value) || 0;
+                    obtained = obtainedTheory + obtainedPractical;
+
+                    // Input validation: Marks must not exceed max
+                    if (obtainedTheory > 75 || obtainedPractical > 25) {
+                        hasError = true;
+                        showToast(`Input for ${name} exceeds maximum marks (75/25). Please correct.`, 'error');
+                        break;
+                    }
+                } else {
+                    // Consolidated marks
+                    obtained = parseFloat(row.querySelector('.marks-obtained').value) || 0;
+                    obtainedTheory = obtained; // Treat the whole obtained mark as the 'theory' component for passing logic
+                    obtainedPractical = 0;
+
+                    // Input validation: Marks must not exceed max
+                    if (obtained > full) {
+                        hasError = true;
+                        showToast(`Input for ${name} exceeds full marks (${full}). Please correct.`, 'error');
+                        break;
+                    }
+                }
+
+                if (hasError) break; // Exit loop on first error
+
+                const percentage = (obtained / full) * 100;
+                const details = getGradeDetails(percentage, full, obtainedTheory, obtainedPractical);
+
+                totalWeightedGPA += details.gpa * full;
+                totalFullMarks += full;
+                totalObtainedMarks += obtained;
+
+                subjectResultsData.push({
+                    name: name,
+                    percentage: percentage.toFixed(2),
+                    grade: details.grade,
+                    gpa: details.gpa.toFixed(2),
+                    colorClass: details.colorClass
+                });
+            }
+
+            if (hasError) {
+                resultsPanel.classList.add('hidden');
+                return;
+            }
+
+            const overallGPAFinal = totalFullMarks > 0 ? (totalWeightedGPA / totalFullMarks) : 0;
+            const overallPercentage = totalFullMarks > 0 ? (totalObtainedMarks / totalFullMarks) * 100 : 0;
+
+            displayResults(overallGPAFinal.toFixed(2), overallPercentage.toFixed(2), totalObtainedMarks, totalFullMarks, subjectResultsData);
+
+            saveCalculatedResultsToLocalStorage(overallGPAFinal.toFixed(2), overallPercentage.toFixed(2), totalObtainedMarks, totalFullMarks, subjectResultsData);
+
+            resultsPanel.classList.remove('hidden'); 
+            showToast("GPA Calculated Successfully!", 'success');
+
+            if (window.innerWidth < 768) {
+                viewResultsBtn.style.display = 'inline-block';
+                toggleView('results');
+            }
+        }
+
+        function displayResults(gpa, percentage, obtainedMarks, fullMarks, resultsData) {
+            resultsTableBody.innerHTML = ''; 
+
+            resultsData.forEach(data => {
+                const gradeColorClass = data.colorClass;
+                const gradeTextColor = `grade-text-${gradeColorClass.slice(-1)}`; 
+
+                const resultHTML = `
+                    <tr>
+                        <td>${data.name}</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar ${gradeColorClass}-color" style="width:0;" data-percentage="${data.percentage}">
+                                    ${data.percentage}%
+                                </div>
+                            </div>
+                        </td>
+                        <td class="${gradeTextColor}">${data.grade}</td>
+                        <td>${data.gpa}</td>
+                    </tr>
+                `;
+                resultsTableBody.insertAdjacentHTML('beforeend', resultHTML);
+            });
+
+            animateProgressBars();
+
+            overallGPADisplay.textContent = gpa;
+            overallPercentageDisplay.textContent = `${percentage}%`;
+            totalMarksDisplay.textContent = `${obtainedMarks} / ${fullMarks}`;
+            updateCircularMeter(parseFloat(gpa));
+
+            previousResultBanner.style.display = 'none'; 
+        }
+
+        // --- 3. UI/UX & Utility Functions ---
+
+        function animateProgressBars() {
+            setTimeout(() => {
+                document.querySelectorAll('.progress-bar').forEach(bar => {
+                    requestAnimationFrame(() => {
+                        bar.style.width = bar.dataset.percentage + '%';
+                    });
+                });
+            }, 50); 
+        }
+
+        function updateCircularMeter(gpa) {
+            const meter = document.querySelector('.overall-gpa-meter');
+            const display = document.querySelector('.gpa-display span');
+
+            let colorVar = 'var(--grade-D)';
+            // Note: GPA rules for color are simplified for visualization
+            if (gpa >= 3.6) { colorVar = 'var(--grade-A)'; }
+            else if (gpa >= 2.8) { colorVar = 'var(--grade-B)'; }
+            else if (gpa >= 2.0) { colorVar = 'var(--grade-C)'; }
+
+            meter.style.borderColor = colorVar;
+            display.style.color = colorVar;
+        }
+
+        function saveSubjectsToLocalStorage() {
+            const subjects = Array.from(document.querySelectorAll('.subject-row')).map(row => {
+                const fullMarks = parseInt(row.querySelector('.full-marks').value);
+                const data = {
+                    name: row.querySelector('.subject-name').value,
+                    full: fullMarks,
+                    theory: '',
+                    practical: '',
+                    obtained: ''
+                };
+                if (fullMarks === 100) {
+                    data.theory = row.querySelector('.marks-theory').value;
+                    data.practical = row.querySelector('.marks-practical').value;
+                    data.obtained = (parseFloat(data.theory) || 0) + (parseFloat(data.practical) || 0);
+                } else {
+                    data.obtained = row.querySelector('.marks-obtained').value;
+                }
+                return data;
+            });
+            localStorage.setItem('nebGpaSubjects', JSON.stringify(subjects));
+            localStorage.setItem('nebGpaSubjectCount', subjects.length); 
+            localStorage.setItem('nebGpaStream', subjectStreamDropdown.value);
+        }
+
+        function saveCalculatedResultsToLocalStorage(gpa, percentage, obtainedMarks, fullMarks, subjectResultsData) {
+            const result = {
+                gpa: gpa,
+                percentage: percentage,
+                obtained: obtainedMarks,
+                full: fullMarks,
+                date: new Date().toLocaleDateString('en-NP'), 
+                subjects: subjectResultsData
+            };
+            localStorage.setItem('nebGpaLastResult', JSON.stringify(result));
+            loadPreviousResult();
+        }
+
+        function loadSubjectsFromLocalStorage() {
+            const savedCount = localStorage.getItem('nebGpaSubjectCount');
+            const savedStream = localStorage.getItem('nebGpaStream');
+
+            if (savedCount && parseInt(savedCount) >= 4 && parseInt(savedCount) <= 10) {
+                subjectCountDropdown.value = savedCount;
+            } else {
+                subjectCountDropdown.value = 6; 
+            }
+
+            if(savedStream && SUBJECT_PRESETS[savedStream]) {
+                subjectStreamDropdown.value = savedStream;
+            } else {
+                subjectStreamDropdown.value = 'custom';
+            }
+
+            generateInitialSubjects(true, false); 
+            loadPreviousResult();
+        }
+
+        function loadPreviousResult() {
+            const lastResultString = localStorage.getItem('nebGpaLastResult');
+            if (lastResultString) {
+                const lastResult = JSON.parse(lastResultString);
+
+                lastGPADisplay.textContent = lastResult.gpa;
+                lastCalcDateDisplay.textContent = lastResult.date;
+                previousResultBanner.style.display = 'flex';
+
+            } else {
+                 previousResultBanner.style.display = 'none';
+            }
+        }
+
+        function showLastResultHandler() {
+            const lastResultString = localStorage.getItem('nebGpaLastResult');
+            if (lastResultString) {
+                const lastResult = JSON.parse(lastResultString);
+                displayResults(lastResult.gpa, lastResult.percentage, lastResult.obtained, lastResult.full, lastResult.subjects);
+                toggleView('results'); 
+                resultsPanel.classList.remove('hidden'); 
+                showToast("Showing last saved results.", 'info');
+            } else {
+                showToast("No previous results saved.", 'error');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('nebGpaDarkMode', isDarkMode);
+
+            const icon = document.getElementById('darkModeToggle').querySelector('i');
+            icon.classList.toggle('fa-moon', !isDarkMode);
+            icon.classList.toggle('fa-sun', isDarkMode);
+            showToast(isDarkMode ? "Dark Mode Activated 🌙" : "Light Mode Activated ☀️", 'info', 1500);
+        }
+
+        function resetAll() {
+            const message = "Are you sure you want to **reset all data and inputs**? This will clear local storage.";
+            showCustomConfirm("Confirm Reset", message, (confirmed) => {
+                if (confirmed) {
+                    localStorage.clear(); 
+                    subjectCountDropdown.value = 6; 
+                    subjectStreamDropdown.value = 'custom';
+                    subjectCounter = 0;
+
+                    resultsTableBody.innerHTML = ''; 
+                    overallGPADisplay.textContent = '--';
+                    overallPercentageDisplay.textContent = '--';
+                    totalMarksDisplay.textContent = '0 / 0';
+                    previousResultBanner.style.display = 'none'; 
+
+                    toggleView('input'); 
+                    generateInitialSubjects(false, false); 
+                    showToast("All data has been reset.", 'success');
+                }
+            });
+        }
+
+        // Modal Logic
+        function openAboutModal() {
+            aboutModal.style.display = "block";
+            // Check for image loading status on modal open
+            const img = document.querySelector('#aboutModal .creator-photo');
+            const icon = document.querySelector('#aboutModal .creator-icon');
+            if (img.complete && img.naturalHeight !== 0) {
+                 // Image loaded successfully
+                 img.classList.remove('hidden');
+                 icon.style.display = 'none';
+            } else if (img.classList.contains('hidden')) {
+                 // Image failed to load earlier and was hidden by onerror
+                 icon.style.display = 'block';
+            } else {
+                // If the image is still loading or hasn't loaded and hasn't triggered onerror yet, hide the icon.
+                 icon.style.display = 'none';
+            }
+
+        }
+
+        function closeAboutModal() {
+            aboutModal.style.display = "none";
+        }
+
+        // Ad Script Check (IMPROVEMENT)
+        function checkAdLoadStatus() {
+            setTimeout(() => {
+                const adContainer = document.getElementById('ad-container');
+                // The ad script usually replaces its content with an iframe/script.
+                // If it fails, the placeholder will still be there.
+                if (adContainer && adContainer.children.length > 2 && adContainer.contains(adPlaceholder)) {
+                    // This is a heuristic: check if an iframe or a new script tag (other than the two original ones)
+                    // or a div with a width/height style (common for ad wrappers) has been added.
+                    const loadedAd = Array.from(adContainer.children).find(child => 
+                        (child.tagName === 'IFRAME' || child.tagName === 'DIV' && child.style.width) 
+                        && child !== adPlaceholder 
+                        && child.tagName !== 'SCRIPT'
+                    );
+                    
+                    if (loadedAd) {
+                        adPlaceholder.style.display = 'none'; // Hide placeholder if ad content is detected
+                    } else {
+                        // If no ad content is detected, ensure the placeholder is visible.
+                        adPlaceholder.style.display = 'block'; 
+                    }
+                }
+            }, 2000); // Check 2 seconds after DOM load
+        }
+
+
+        // --- 4. Export & Share Functions ---
+        async function shareResults() {
+            if (resultsPanel.classList.contains('hidden')) {
+                showToast("Please calculate the GPA before sharing results.", 'error');
+                return;
+            }
+
+            const gpa = overallGPADisplay.textContent;
+            const percentage = overallPercentageDisplay.textContent;
+
+            const shareText = `🎉 My NEB Results!\nOverall GPA: ${gpa}\nPercentage: ${percentage}\n\nCalculate your own GPA using the KingamerNep NEB Calculator!`;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'NEB GPA Results',
+                        text: shareText,
+                    });
+                } catch (error) {
+                    fallbackCopyToClipboard(shareText);
+                }
+            } else {
+                fallbackCopyToClipboard(shareText);
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Results copied to clipboard! Share it now.", 'success');
+            }).catch(err => {
+                showToast("Failed to copy results. Please manually copy the results from the screen.", 'error');
+            });
+        }
+
+        function exportCsv() {
+            if (resultsPanel.classList.contains('hidden')) {
+                 showToast("Please calculate the GPA before exporting results.", 'error');
+                 return;
+            }
+            const data = [["Subject", "Percentage", "Grade", "GPA"]];
+
+            document.getElementById('perSubjectResults').querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const progressBar = cells[1].querySelector('.progress-bar');
+                const percentage = progressBar ? progressBar.textContent.trim() : 'N/A'; 
+                data.push([
+                    cells[0].textContent.trim(), 
+                    percentage,
+                    cells[2].textContent.trim(),
+                    cells[3].textContent.trim()
+                ]);
+            });
+
+            data.push(["", "", "", ""]);
+            data.push(["Overall GPA", overallGPADisplay.textContent, "", ""]);
+            data.push(["Overall Percentage", overallPercentageDisplay.textContent, "", ""]);
+
+            const csvContent = data.map(e => e.join(",")).join("\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "NEB_GPA_Results.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast("Results Exported as CSV.", 'success');
+        }
+
+        function exportPdf() {
+            if (resultsPanel.classList.contains('hidden')) {
+                 showToast("Please calculate the GPA before exporting results.", 'error');
+                 return;
+            }
+            if (!window.jspdf || !window.jspdf.jsPDF.prototype.autoTable) {
+                 showToast("PDF export libraries are missing or failed to load.", 'error');
+                 return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("NEB GPA Calculator Results", 14, 22);
+
+            const totalText = document.getElementById('totalMarks').textContent.trim();
+            doc.setFontSize(11);
+            doc.text(`Overall GPA: ${overallGPADisplay.textContent}`, 14, 35);
+            doc.text(`Overall Percentage: ${overallPercentageDisplay.textContent}`, 14, 41);
+            doc.text(`Total Marks: ${totalText}`, 14, 47);
+
+            const tableHeaders = [["Subject", "Percentage", "Grade", "GPA"]];
+            const tableData = [];
+
+            document.getElementById('perSubjectResults').querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const progressBar = cells[1].querySelector('.progress-bar');
+                const percentage = progressBar ? progressBar.textContent.trim() : 'N/A'; 
+                tableData.push([
+                    cells[0].textContent.trim(),
+                    percentage,
+                    cells[2].textContent.trim(),
+                    cells[3].textContent.trim()
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 55,
+                head: tableHeaders,
+                body: tableData,
+                theme: 'striped',
+                styles: { fontSize: 10, cellPadding: 3 },
+                headStyles: { fillColor: [0, 123, 255] }
+            });
+
+            doc.setFontSize(8);
+            doc.text("© 2025 David Shrestha | Made with ❤️ by KingamerNep", 14, doc.internal.pageSize.height - 10);
+
+            doc.save("NEB_GPA_Results.pdf");
+            showToast("Results Exported as PDF.", 'success');
+        }
+
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dark Mode Init
+            const isDarkMode = localStorage.getItem('nebGpaDarkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').querySelector('i').classList.remove('fa-moon');
+                document.getElementById('darkModeToggle').querySelector('i').classList.add('fa-sun');
+            }
+
+            loadSubjectsFromLocalStorage();
+            // IMPORTANT: Call Ad check after loading
+            checkAdLoadStatus(); 
+
+            // Event Bindings
+            document.getElementById('addSubjectBtn').addEventListener('click', () => {
+                addSubjectRow();
+                showToast("Subject added.", 'info', 1500);
+            });
+            document.getElementById('calculateBtn').addEventListener('click', calculateGPA);
+
+            // Navigation Bindings
+            document.getElementById('backToInputBtn').addEventListener('click', () => toggleView('input'));
+            document.getElementById('viewResultsBtn').addEventListener('click', () => {
+                if (!resultsPanel.classList.contains('hidden')) {
+                    toggleView('results');
+                } else {
+                    showToast("Please calculate results first.", 'error');
+                }
+            });
+            document.getElementById('showLastResultBtn').addEventListener('click', showLastResultHandler); 
+
+            // General Bindings
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('resetBtn').addEventListener('click', resetAll);
+            document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+            document.getElementById('exportPdfBtn').addEventListener('click', exportPdf);
+            document.getElementById('shareBtn').addEventListener('click', shareResults); 
+
+            // Modal Bindings
+            aboutAppBtn.addEventListener('click', openAboutModal);
+            closeBtn.addEventListener('click', closeAboutModal);
+
+            // Custom Confirm Modal Bindings
+            confirmOkBtn.addEventListener('click', handleConfirmOk);
+            confirmCancelBtn.addEventListener('click', handleConfirmCancel);
+
+            window.addEventListener('click', (event) => {
+                if (event.target == aboutModal) {
+                    closeAboutModal();
+                }
+                if (event.target == confirmModal) {
+                    handleConfirmCancel(); // Clicking outside the custom confirm box cancels it
+                }
+            });
+
+            subjectCountDropdown.addEventListener('change', () => {
+                subjectStreamDropdown.value = 'custom'; 
+                generateInitialSubjects(false);
+            });
+
+            subjectStreamDropdown.addEventListener('change', handleStreamChange); 
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    // Always show both panels on desktop
+                    body.classList.remove('input-view', 'results-view');
+                    resultsPanel.classList.remove('hidden');
+                } else {
+                    // Re-apply mobile view class if screen shrinks
+                    if (body.classList.contains('results-view')) {
+                         resultsPanel.classList.remove('hidden');
+                    } else {
+                         body.classList.add('input-view');
+                         resultsPanel.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
